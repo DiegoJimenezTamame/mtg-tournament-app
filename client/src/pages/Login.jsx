@@ -15,6 +15,7 @@ const Login = ({ onLogin }) => {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
       onLogin(userCred.user);
     } catch (error) {
+      console.error("Login error:", error); // 👈 log this
       alert("Login failed. Are you registered?");
     }
   };
@@ -24,6 +25,7 @@ const Login = ({ onLogin }) => {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       onLogin(userCred.user);
     } catch (error) {
+      console.error("Registration error:", error); // 👈 log this
       alert("Registration failed.");
     }
   };
@@ -33,9 +35,11 @@ const Login = ({ onLogin }) => {
       const userCred = await signInAnonymously(auth);
       onLogin(userCred.user);
     } catch (error) {
-      alert("Guest login failed.");
+      console.error("Guest login failed:", error); // ← log the full error
+      alert(`Guest login failed: ${error.message}`);
     }
   };
+
 
   return (
     <div style={{ padding: "2rem" }}>

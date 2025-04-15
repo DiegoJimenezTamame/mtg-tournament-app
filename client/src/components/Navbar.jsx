@@ -1,4 +1,3 @@
-// client/src/components/Navbar.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -14,7 +13,7 @@ const Navbar = ({ user, onLogout }) => {
         {user ? (
           <>
             <Link to="/" style={styles.link}>Events</Link>
-            {/* You can add more links here later */}
+            {/* Removed: <Link to="/create" style={styles.link}>Create Event</Link> */}
             <button onClick={onLogout} style={styles.button}>Logout</button>
           </>
         ) : (

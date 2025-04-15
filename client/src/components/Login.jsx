@@ -14,11 +14,13 @@ const Login = ({ onLogin }) => {
   const handleLogin = async () => {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
-      onLogin(userCred.user);  // Pass the authenticated user to the parent
+      onLogin(userCred.user);
     } catch (error) {
+      console.error("Login error:", error); // 👈 log it here
       alert("Login failed. Are you registered?");
     }
   };
+
 
   const handleRegister = async () => {
     try {
