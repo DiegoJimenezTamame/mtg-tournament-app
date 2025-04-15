@@ -13,7 +13,8 @@ const Navbar = ({ user, onLogout }) => {
         {user ? (
           <>
             <Link to="/" style={styles.link}>Events</Link>
-            {/* Removed: <Link to="/create" style={styles.link}>Create Event</Link> */}
+            {/* Added the link for Player Registration */}
+            <Link to="/register" style={styles.link}>Join an Event</Link>
             <button onClick={onLogout} style={styles.button}>Logout</button>
           </>
         ) : (
