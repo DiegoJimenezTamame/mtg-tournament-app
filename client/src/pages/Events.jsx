@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { db } from "../firebase";  // Assuming Firebase is imported here
 import { collection, query, where, getDocs, doc, deleteDoc } from "firebase/firestore";  // Firebase Firestore methods
 import { Link } from "react-router-dom";  // Link for navigation
+import EventForm from "../components/EventForm"; // Make sure path is correct
 
 const Events = ({ user }) => {
   const [events, setEvents] = useState([]);
@@ -9,6 +10,7 @@ const Events = ({ user }) => {
   const [eventToDelete, setEventToDelete] = useState(null);
   const [sortField, setSortField] = useState("name"); // Default sort by name
   const [sortDirection, setSortDirection] = useState("asc"); // Default sort direction is ascending
+  const [showModal, setShowModal] = useState(false);
   const [visibleColumns, setVisibleColumns] = useState({
     name: true,
     format: true,
@@ -81,16 +83,20 @@ const Events = ({ user }) => {
   return (
     <div style={{ padding: "2rem" }}>
       <div style={{ marginBottom: "1.5rem" }}>
-        <Link to="/create" style={{
-          padding: "0.6rem 1rem",
-          backgroundColor: "#3b82f6",
-          color: "white",
-          textDecoration: "none",
-          borderRadius: "6px",
-          fontWeight: "bold"
-        }}>
+        <button
+          onClick={() => setShowModal(true)}
+          style={{
+            padding: "0.6rem 1rem",
+            backgroundColor: "#3b82f6",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            fontWeight: "bold",
+            cursor: "pointer"
+          }}
+        >
           + Create Event
-        </Link>
+        </button>
       </div>
 
       <h2>Your Events</h2>
@@ -424,6 +430,15 @@ const Events = ({ user }) => {
           <h3>Are you sure you want to delete this event?</h3>
           <button onClick={handleDeleteEvent}>Confirm</button>
           <button onClick={() => setIsDeleting(false)}>Cancel</button>
+        </div>
+      )}
+      {showModal && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, width: "100%", height: "100%",
+          backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex: 999
+        }}>
+          <EventForm user={user} onClose={() => setShowModal(false)} onEventCreated={() => window.location.reload()} />
         </div>
       )}
     </div>

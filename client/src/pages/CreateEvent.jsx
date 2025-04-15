@@ -151,6 +151,7 @@ const CreateEvent = ({ user }) => {
         <option value="Standard">Standard</option>
         <option value="Pioneer">Pioneer</option>
         <option value="Modern">Modern</option>
+        <option value="Pauper">Modern</option>
         <option value="Legacy">Legacy</option>
         <option value="Commander">Commander</option>
         <option value="Draft">Draft</option>
