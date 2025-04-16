@@ -10,11 +10,15 @@ const Navbar = ({ user, onLogout }) => {
         </Link>
       </div>
       <div style={styles.links}>
+        {/* 🏠 Home link added */}
+        <Link to="/" style={styles.link}>Home</Link>
+
+        {/* 🔓 Join Event link always visible */}
+        <Link to="/register" style={styles.link}>Join an Event</Link>
+
         {user ? (
           <>
-            <Link to="/" style={styles.link}>Events</Link>
-            {/* Added the link for Player Registration */}
-            <Link to="/register" style={styles.link}>Join an Event</Link>
+            <Link to="/events" style={styles.link}>Events</Link>
             <button onClick={onLogout} style={styles.button}>Logout</button>
           </>
         ) : (

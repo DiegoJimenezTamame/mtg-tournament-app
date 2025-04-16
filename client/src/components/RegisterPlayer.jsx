@@ -1,45 +1,70 @@
 import React, { useState } from "react";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  serverTimestamp
+} from "firebase/firestore";
 import { db } from "../firebase";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";  // Updated import
-import { FaCheckCircle } from "react-icons/fa"; // For the check icon
+import { useNavigate } from "react-router-dom";
+import { FaCheckCircle } from "react-icons/fa";
 
 const RegisterPlayer = ({ user }) => {
   const [eventCode, setEventCode] = useState("");
-  const [playerName, setPlayerName] = useState(""); // To store player's name
+  const [playerName, setPlayerName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState(""); // To store success message
-  const navigate = useNavigate();  // Use navigate instead of history
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
+
     if (!eventCode || !playerName) {
-      setErrorMessage("Both name and event code are required");
+      setErrorMessage("Both name and event code are required.");
       return;
     }
 
-    const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("joinCode", "==", eventCode));
-    const querySnapshot = await getDocs(q);
+    try {
+      // Find event by join code
+      const eventsRef = collection(db, "events");
+      const q = query(eventsRef, where("joinCode", "==", eventCode));
+      const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
+      if (querySnapshot.empty) {
+        setErrorMessage("Invalid event code.");
+        return;
+      }
+
       const event = querySnapshot.docs[0];
-      // Register the player by adding their name to the event's players list
-      const eventRef = doc(db, "events", event.id);
-      await updateDoc(eventRef, {
-        players: [
-          ...(event.data().players || []),
-          { uid: user.uid, name: playerName, timestamp: new Date() } // Save player's name along with UID and timestamp
-        ],
+      const eventId = event.id;
+
+      // Check if user already registered
+      const playersRef = collection(db, "events", eventId, "players");
+      const checkQuery = query(playersRef, where("name", "==", playerName));
+      const checkSnap = await getDocs(checkQuery);
+
+      if (!checkSnap.empty) {
+        setErrorMessage("This name is already registered for this event.");
+        return;
+      }
+
+      // Add to players subcollection
+      await addDoc(collection(db, "events", event.id, "players"), {
+        name: playerName,
+        timestamp: serverTimestamp(),
       });
 
-      // Set the success message and display the notification
       setSuccessMessage("You have joined the event!");
       setTimeout(() => {
-        navigate(`/event/${event.id}`);  // Redirect to event details page
-      }, 2000); // Delay before redirecting to show the success message
-    } else {
-      setErrorMessage("Invalid event code");
+        navigate(`/event/${eventId}`);
+      }, 2000);
+    } catch (err) {
+      console.error("Error joining event:", err);
+      setErrorMessage("Something went wrong. Please try again.");
     }
   };
 
@@ -57,7 +82,7 @@ const RegisterPlayer = ({ user }) => {
         <input
           type="text"
           value={eventCode}
-          onChange={(e) => setEventCode(e.target.value)}
+          onChange={(e) => setEventCode(e.target.value.toUpperCase())}
           placeholder="Enter Event Code"
           style={styles.input}
         />
