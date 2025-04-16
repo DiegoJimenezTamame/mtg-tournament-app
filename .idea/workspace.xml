@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="65fc35f7-0ca3-4dcc-9e7e-3205c39aaa95" name="Changes" comment="Started implementing Join an Event link on Navbar.jsx, RegisterPlayer.jsx and edited EventDetails.jsx">
+    <list default="true" id="65fc35f7-0ca3-4dcc-9e7e-3205c39aaa95" name="Changes" comment="Updated the logic for non-logged users to join events.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/Navbar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/Navbar.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/components/RegisterPlayer.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/RegisterPlayer.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/pages/Home.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/Home.jsx" afterDir="false" />
     </list>
@@ -100,7 +99,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744733551157</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Updated the logic for non-logged users to join events.">
+      <option name="closed" value="true" />
+      <created>1744793113058</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1744793113058</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -120,6 +127,7 @@
     <MESSAGE value="Updated Events.jsx, CreateEvent.jsx, Implemented MongoDB, firebase.js, Firestore, new API key, and Login.jsx logic and access management." />
     <MESSAGE value="Migrated Create/Edit Event logic from CreateEvent.jsx to EventForm.jsx, edited the data display on Events.jsx. Deleted CreateEvent.jsx from Navigation Bar.&#10;Slight formatting of the table." />
     <MESSAGE value="Started implementing Join an Event link on Navbar.jsx, RegisterPlayer.jsx and edited EventDetails.jsx" />
-    <option name="LAST_COMMIT_MESSAGE" value="Started implementing Join an Event link on Navbar.jsx, RegisterPlayer.jsx and edited EventDetails.jsx" />
+    <MESSAGE value="Updated the logic for non-logged users to join events." />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated the logic for non-logged users to join events." />
   </component>
 </project>

@@ -6,10 +6,10 @@ import { db } from '../firebase';
 const Home = ({ user }) => {
   const [activeEvents, setActiveEvents] = useState([]);
   const [userEvents, setUserEvents] = useState([]);
+  const [creatorNames, setCreatorNames] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch all active events for non-logged-in users
     const fetchActiveEvents = async () => {
       try {
         const q = query(collection(db, 'events'), where('status', '==', 'waiting'));
@@ -19,12 +19,26 @@ const Home = ({ user }) => {
           ...doc.data()
         }));
         setActiveEvents(events);
+
+        // Grab unique createdBy values
+        const creatorEmails = [...new Set(events.map(ev => ev.createdBy))];
+
+        // Fetch names of creators
+        const usersSnapshot = await getDocs(
+          query(collection(db, 'users'), where('email', 'in', creatorEmails))
+        );
+        const namesMap = {};
+        usersSnapshot.forEach(doc => {
+          const data = doc.data();
+          namesMap[data.email] = data.name;
+        });
+
+        setCreatorNames(namesMap);
       } catch (err) {
-        console.error('Error fetching active events:', err);
+        console.error('Error fetching events or creator names:', err);
       }
     };
 
-    // Fetch the user's events (if logged in)
     const fetchUserEvents = async () => {
       if (user) {
         try {
@@ -41,26 +55,24 @@ const Home = ({ user }) => {
       }
     };
 
-    // Execute the fetch functions
     fetchActiveEvents();
     fetchUserEvents();
     setLoading(false);
   }, [user]);
 
-  if (loading) return <p>Loading...</p>;
-
   const formatDate = (date) => {
     if (date && date.seconds) {
       return new Date(date.seconds * 1000).toLocaleDateString();
     }
-    return "Date not available";  // Fallback if date is not valid
+    return "Date not available";
   };
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div className="home-container" style={{ padding: '2rem' }}>
       <h1>Welcome to Magic: The Gathering Tournament Organizer</h1>
 
-      {/* If the user is logged in */}
       {user ? (
         <div>
           <p>You are logged in as {user.email}</p>
@@ -81,7 +93,7 @@ const Home = ({ user }) => {
                 {userEvents.map((event) => (
                   <tr key={event.id}>
                     <td>{event.name}</td>
-                    <td>{formatDate(event.date)}</td> {/* Use the formatDate function here */}
+                    <td>{formatDate(event.date)}</td>
                     <td>{event.joinCode}</td>
                     <td>
                       <Link to={`/event/${event.id}`} style={styles.link}>View Details</Link>
@@ -93,7 +105,6 @@ const Home = ({ user }) => {
           )}
         </div>
       ) : (
-        // If the user is not logged in, show open events with join codes
         <div>
           <h2>Open Events</h2>
           {activeEvents.length === 0 ? (
@@ -113,8 +124,8 @@ const Home = ({ user }) => {
                 {activeEvents.map((event) => (
                   <tr key={event.id}>
                     <td>{event.name}</td>
-                    <td>{formatDate(event.date)}</td> {/* Use the formatDate function here */}
-                    <td>{event.createdBy}</td>
+                    <td>{formatDate(event.date)}</td>
+                    <td>{creatorNames[event.createdBy] || event.createdBy}</td>
                     <td>{event.joinCode}</td>
                     <td>
                       <Link to={`/register?eventCode=${event.joinCode}`} style={styles.link}>Join</Link>

@@ -13,7 +13,8 @@ import { FaCheckCircle } from "react-icons/fa";
 
 const RegisterPlayer = ({ user }) => {
   const [eventCode, setEventCode] = useState("");
-  const [playerName, setPlayerName] = useState("");
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
@@ -23,13 +24,12 @@ const RegisterPlayer = ({ user }) => {
     setErrorMessage("");
     setSuccessMessage("");
 
-    if (!eventCode || !playerName) {
-      setErrorMessage("Both name and event code are required.");
+    if (!eventCode || !name || !surname) {
+      setErrorMessage("Name, surname, and event code are required.");
       return;
     }
 
     try {
-      // Find event by join code
       const eventsRef = collection(db, "events");
       const q = query(eventsRef, where("joinCode", "==", eventCode));
       const querySnapshot = await getDocs(q);
@@ -42,9 +42,12 @@ const RegisterPlayer = ({ user }) => {
       const event = querySnapshot.docs[0];
       const eventId = event.id;
 
-      // Check if user already registered
       const playersRef = collection(db, "events", eventId, "players");
-      const checkQuery = query(playersRef, where("name", "==", playerName));
+      const checkQuery = query(
+        playersRef,
+        where("name", "==", name),
+        where("surname", "==", surname)
+      );
       const checkSnap = await getDocs(checkQuery);
 
       if (!checkSnap.empty) {
@@ -52,10 +55,12 @@ const RegisterPlayer = ({ user }) => {
         return;
       }
 
-      // Add to players subcollection
-      await addDoc(collection(db, "events", event.id, "players"), {
-        name: playerName,
+      await addDoc(playersRef, {
+        name,
+        surname,
+        fullName: `${name} ${surname}`,
         timestamp: serverTimestamp(),
+        uid: user?.uid || null,
       });
 
       setSuccessMessage("You have joined the event!");
@@ -74,9 +79,16 @@ const RegisterPlayer = ({ user }) => {
       <form onSubmit={handleRegister} style={styles.form}>
         <input
           type="text"
-          value={playerName}
-          onChange={(e) => setPlayerName(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           placeholder="Enter your name"
+          style={styles.input}
+        />
+        <input
+          type="text"
+          value={surname}
+          onChange={(e) => setSurname(e.target.value)}
+          placeholder="Enter your surname"
           style={styles.input}
         />
         <input
@@ -146,5 +158,6 @@ const styles = {
     fontSize: "1.5rem",
   },
 };
+
 
 export default RegisterPlayer;

@@ -15,21 +15,21 @@ const EventDetails = () => {
     const auth = getAuth();
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        console.log("User authenticated:", authUser);  // Log the user info
+        console.log("User authenticated:", authUser);
       } else {
-        console.log("No user is authenticated.");  // Log if no user is authenticated
+        console.log("No user is authenticated.");
       }
-      setUser(authUser);  // Set the user when it's available
+      setUser(authUser);
     });
 
-    return () => unsubscribe(); // Cleanup listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   // Fetch event data once user and eventId are available
   useEffect(() => {
     if (!user || !eventId) {
       console.log('User or event ID is not available.');
-      return;  // Prevent fetching data if the user is not authenticated or eventId is missing
+      return;
     }
 
     const fetchEventData = async () => {
@@ -42,7 +42,7 @@ const EventDetails = () => {
 
         if (eventSnap.exists()) {
           setEvent({ id: eventSnap.id, ...eventSnap.data() });
-          console.log("Event data fetched:", eventSnap.data());  // Log event data
+          console.log("Event data fetched:", eventSnap.data());
         } else {
           console.log("Event not found.");
         }
@@ -50,10 +50,16 @@ const EventDetails = () => {
         // Fetch players and their timestamps
         const playersRef = collection(db, 'events', eventId, 'players');
         const playersSnap = await getDocs(playersRef);
-        const playersList = playersSnap.docs.map(doc => ({
-          name: doc.data().name,
-          timestamp: doc.data().timestamp?.toDate().toLocaleString() || "Not available"
-        }));
+        const playersList = playersSnap.docs.map(doc => {
+          const data = doc.data();
+          const fullName = data.firstName && data.surname
+            ? `${data.firstName} ${data.surname}`
+            : data.name || "Unnamed Player";
+          return {
+            name: fullName,
+            timestamp: data.timestamp?.toDate().toLocaleString() || "Not available"
+          };
+        });
         setPlayers(playersList);
       } catch (err) {
         console.error("Error fetching event data:", err);
@@ -61,14 +67,12 @@ const EventDetails = () => {
     };
 
     fetchEventData();
-  }, [eventId, user]);  // Re-run effect when eventId or user changes
+  }, [eventId, user]);
 
-  // Show loading message until user is authenticated
   if (!user) {
     return <div>Loading user authentication...</div>;
   }
 
-  // Show loading message until event data is fetched
   if (!eventId) {
     return <div>Event ID is missing...</div>;
   }
