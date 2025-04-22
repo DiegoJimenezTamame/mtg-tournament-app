@@ -5,7 +5,6 @@ const Tournaments = () => {
   const [tournaments, setTournaments] = useState([]);
 
   useEffect(() => {
-    // Fetch the tournaments data from your API
     const fetchTournaments = async () => {
       try {
         const response = await axios.get('http://localhost:5000/api/tournaments');
@@ -18,6 +17,17 @@ const Tournaments = () => {
     fetchTournaments();
   }, []);
 
+  const handleGeneratePairings = async (tournamentId) => {
+    try {
+      const round = 1; // You can dynamically calculate the round if needed
+      await axios.post(`http://localhost:5000/api/tournaments/pairings/${tournamentId}`, { round });
+      alert('Pairings generated successfully!');
+    } catch (error) {
+      console.error('Error generating pairings:', error);
+      alert('Failed to generate pairings.');
+    }
+  };
+
   return (
     <div className="tournaments-list">
       <h2>Ongoing Tournaments</h2>
@@ -29,7 +39,9 @@ const Tournaments = () => {
             <li key={tournament._id}>
               <h3>{tournament.name}</h3>
               <p>{tournament.description}</p>
-              <button onClick={() => {/* Navigate to tournament details */}}>Join Tournament</button>
+              <button onClick={() => handleGeneratePairings(tournament._id)}>
+                Generate Pairings
+              </button>
             </li>
           ))}
         </ul>

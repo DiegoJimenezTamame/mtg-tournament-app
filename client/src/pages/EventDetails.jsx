@@ -2,64 +2,43 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../firebase';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';  // Import Firebase Authentication
+import { getAuth } from 'firebase/auth';
 
 const EventDetails = () => {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [players, setPlayers] = useState([]);
-  const [user, setUser] = useState(null);  // State to hold the authenticated user
+  const [user, setUser] = useState(null);
 
-  // Fetch the authenticated user on component mount
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        console.log("User authenticated:", authUser);
-      } else {
-        console.log("No user is authenticated.");
+        setUser(authUser);
       }
-      setUser(authUser);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Fetch event data once user and eventId are available
   useEffect(() => {
-    if (!user || !eventId) {
-      console.log('User or event ID is not available.');
-      return;
-    }
+    if (!user || !eventId) return;
 
     const fetchEventData = async () => {
       try {
-        console.log("Fetching event data...");
-
-        // Fetch event data
         const eventDocRef = doc(db, 'events', eventId);
         const eventSnap = await getDoc(eventDocRef);
 
         if (eventSnap.exists()) {
           setEvent({ id: eventSnap.id, ...eventSnap.data() });
-          console.log("Event data fetched:", eventSnap.data());
-        } else {
-          console.log("Event not found.");
         }
 
-        // Fetch players and their timestamps
         const playersRef = collection(db, 'events', eventId, 'players');
         const playersSnap = await getDocs(playersRef);
-        const playersList = playersSnap.docs.map(doc => {
-          const data = doc.data();
-          const fullName = data.firstName && data.surname
-            ? `${data.firstName} ${data.surname}`
-            : data.name || "Unnamed Player";
-          return {
-            name: fullName,
-            timestamp: data.timestamp?.toDate().toLocaleString() || "Not available"
-          };
-        });
+        const playersList = playersSnap.docs.map(doc => ({
+          name: `${doc.data().firstName} ${doc.data().surname}`,
+          timestamp: doc.data().timestamp?.toDate().toLocaleString() || "Not available"
+        }));
         setPlayers(playersList);
       } catch (err) {
         console.error("Error fetching event data:", err);
@@ -69,59 +48,33 @@ const EventDetails = () => {
     fetchEventData();
   }, [eventId, user]);
 
+  const handleGeneratePairings = async () => {
+    try {
+      const round = 1;  // Example round, you may need to dynamically calculate it
+      await axios.post(`http://localhost:5000/api/tournaments/pairings/${eventId}`, { round });
+      alert('Pairings generated successfully!');
+    } catch (error) {
+      console.error('Error generating pairings:', error);
+      alert('Failed to generate pairings.');
+    }
+  };
+
   if (!user) {
     return <div>Loading user authentication...</div>;
   }
 
-  if (!eventId) {
-    return <div>Event ID is missing...</div>;
-  }
-
-  if (!event) return <div>Loading event details...</div>;
-
-  const {
-    name,
-    format,
-    type,
-    status,
-    joinCode,
-    createdAt,
-    generateSeatings,
-    entryFee,
-    entryFeeAmount,
-    date,
-    settings = {}
-  } = event;
+  if (!eventId || !event) return <div>Loading event details...</div>;
 
   return (
     <div style={{ padding: "2rem" }}>
-      <h2>Event: {name}</h2>
+      <h2>Event: {event.name}</h2>
 
       <h3>General Info</h3>
       <ul>
-        <li><strong>Format:</strong> {format}</li>
-        <li><strong>Type:</strong> {type}</li>
-        <li><strong>Status:</strong> {status}</li>
-        <li><strong>Join Code:</strong> {joinCode}</li>
-        {createdAt && (
-          <li><strong>Created At:</strong> {new Date(createdAt.seconds * 1000).toLocaleString()}</li>
-        )}
-        {date && (
-          <li><strong>Event Date:</strong> {new Date(date.seconds * 1000).toLocaleString()}</li>
-        )}
-        {entryFee !== undefined && (
-          <li><strong>Entry Fee:</strong> {entryFee ? `Yes (€${entryFeeAmount})` : "No"}</li>
-        )}
-      </ul>
-
-      <h3>Event Settings</h3>
-      <ul>
-        <li><strong>Max Rounds:</strong> {settings.maxRounds}</li>
-        <li><strong>Best Of:</strong> {settings.bestOf}</li>
-        <li><strong>Round Time (Countdown):</strong> {settings.countdown} minutes</li>
-        {(format === "Draft" || format === "Cube Draft") && (
-          <li><strong>Generate Seatings:</strong> {generateSeatings ? "Yes" : "No"}</li>
-        )}
+        <li><strong>Format:</strong> {event.format}</li>
+        <li><strong>Type:</strong> {event.type}</li>
+        <li><strong>Status:</strong> {event.status}</li>
+        <li><strong>Join Code:</strong> {event.joinCode}</li>
       </ul>
 
       <h3>Players Signed Up</h3>
@@ -133,6 +86,12 @@ const EventDetails = () => {
         </ul>
       ) : (
         <p>No players have signed up yet.</p>
+      )}
+
+      {event.status === 'waiting' && (
+        <div>
+          <button onClick={handleGeneratePairings}>Generate Pairings</button>
+        </div>
       )}
     </div>
   );
